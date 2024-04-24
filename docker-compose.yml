@@ -1,7 +1,6 @@
 # Copyright The OpenTelemetry Authors
 # SPDX-License-Identifier: Apache-2.0
 
-version: '3.9'
 x-default-logging: &logging
   driver: "json-file"
   options:
@@ -670,11 +669,41 @@ services:
       - "${GRAFANA_SERVICE_PORT}"
     logging: *logging
 
+  # NGINX Collector Load Balancer
+  collectorloadbalancer:
+    image: ${IMAGE_NAME}:${DEMO_VERSION}-collectorloadbalancer
+    container_name: collectorloadbalancer
+    build:
+      context: ./
+      dockerfile: ./src/collectorloadbalancer/Dockerfile
+      cache_from:
+        - ${IMAGE_NAME}:${IMAGE_VERSION}-collectorloadbalancer
+    deploy:
+      resources:
+        limits:
+          memory: 120M
+    restart: unless-stopped
+    ports:
+      - "${OTEL_COLLECTOR_PORT_GRPC}"
+      - "${OTEL_COLLECTOR_PORT_HTTP}"
+    environment:
+      - OTEL_COLLECTOR_HOST
+      - OTEL_COLLECTOR_PORT_GRPC
+      - OTEL_COLLECTOR_PORT_HTTP
+      - OTEL_SERVICE_NAME=collectorloadbalancer
+      - OTEL_RESOURCE_ATTRIBUTES
+    depends_on:
+      otelcol:
+        condition: service_started
+    logging: *logging
+
+  
   # OpenTelemetry Collector
   otelcol:
     image: ${COLLECTOR_CONTRIB_IMAGE}
-    container_name: otel-col
+    #container_name: otelcol
     deploy:
+      replicas: 3
       resources:
         limits:
           memory: 200M
