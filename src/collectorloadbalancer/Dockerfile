@@ -1,7 +1,7 @@
 # Copyright The OpenTelemetry Authors
 # SPDX-License-Identifier: Apache-2.0
 
-FROM nginx:1.25.5
+FROM nginx:1.25.3
 
 RUN apt-get update ; apt-get install lsb-release --no-install-recommends --no-install-suggests -y
 
@@ -9,7 +9,6 @@ RUN apt-get update ; apt-get install lsb-release --no-install-recommends --no-in
 RUN echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" | tee /etc/apt/sources.list.d/nginx.list
 
 RUN apt-get update ; apt-get install nginx-module-otel --no-install-recommends --no-install-suggests -y
-
 
 EXPOSE ${OTEL_COLLECTOR_PORT_GRPC} ${OTEL_COLLECTOR_PORT_HTTP}
 
